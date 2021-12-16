@@ -20,15 +20,15 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  List _items = [];
+  List<List> _items = [];
   List dateTT = [];
-  List storing_list = [];
+  List<DateTime> DateTTT = [];
   String nm = "";
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   Map<DateTime, List> _eventsList = {};
-  Map<DateTime, List> hoji = {};
+
 
   int getHashCode(DateTime key) {
     return key.day * 1000000 + key.month * 10000 + key.year;
@@ -52,24 +52,24 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
 
       for (int i = 0; i < _items.length; i++) {
-        storing_list.clear();
         DateTime datetime = DateTime.parse(dateTT[i]);
+        DateTTT.add(datetime);
         //lislis = _items[i] as List;
-       storing_list.add(_items[i]);
 
-       print(storing_list);
-
+        //print(Storinglist);
 
         //hoji = {datetime:lislis};
         //_eventsList.addAll(hoji);
-        _eventsList[datetime] = storing_list;
-        /*_eventsList = {
-          DateTime.now().subtract(Duration(days: 2)): ['Event A6', 'Event B6'],
-          datetime: lislis,
-        };*/
+        //_eventsList[datetime] = storing_list;
+        //print(_eventsList);
+        _eventsList.addAll({
+          DateTTT[i]: _items[i],
+        }
+        );
         /*_eventsList[datetime] = lislis;*/
 
       }
+
     }
 
 
@@ -162,7 +162,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       /// データベースのパスを取得
 
       List<String> Datelist = [];
-      List list = [];
+      List<List> list = [];
       String dbFilePath = await getDatabasesPath();
       String path = join(dbFilePath, Constants().dbName);
 
@@ -184,7 +184,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
       /// データの取り出し
       for(Map item in result) {
         Datelist.add(item['date']);
-        list.add(item['name']);
+        list.add([item['name']]);
+        print(list);
       }
 
 

@@ -31,7 +31,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   DateTime? _selectedDay;
   Map<DateTime, List> _eventsList = {};
   Map<int, String> dele = {};
-  String Delete_key = "";
+  String Delete_key = ""; 
 
 
   int getHashCode(DateTime key) {

@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:chutoreal/constants.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:quiver/iterables.dart';
 
 
@@ -20,15 +21,18 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  List _items = [];
+  List<List> _items = [];
   List dateTT = [];
-  List storing_list = [];
-  String nm = "";
+  List nameuke = [];
+  List<DateTime> DateTTT = [];
+  String change_key = "";
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   Map<DateTime, List> _eventsList = {};
-  Map<DateTime, List> hoji = {};
+  Map<int, String> dele = {};
+  String Delete_key = "";
+
 
   int getHashCode(DateTime key) {
     return key.day * 1000000 + key.month * 10000 + key.year;
@@ -52,25 +56,50 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
 
       for (int i = 0; i < _items.length; i++) {
-        storing_list.clear();
         DateTime datetime = DateTime.parse(dateTT[i]);
+        DateTTT.add(datetime);
+        nameuke.add(_items[i]);
+        /*dele.addAll({
+          ukeId[i]: nameuke[i],
+        });*/
+        //print(nameuke);
         //lislis = _items[i] as List;
-       storing_list.add(_items[i]);
 
-       print(storing_list);
-
+        //print(Storinglist);
 
         //hoji = {datetime:lislis};
         //_eventsList.addAll(hoji);
-        _eventsList[datetime] = storing_list;
-        /*_eventsList = {
-          DateTime.now().subtract(Duration(days: 2)): ['Event A6', 'Event B6'],
-          datetime: lislis,
-        };*/
+        //_eventsList[datetime] = storing_list;
+        //print(_eventsList);
+        _eventsList.addAll({
+          DateTTT[i]: _items[i],
+        }
+        );
         /*_eventsList[datetime] = lislis;*/
 
       }
+
     }
+
+  void _deleteData(itemId) async{
+
+    String dbFilePath = await getDatabasesPath();
+    String path = join (dbFilePath, Constants().dbName);
+
+
+    Database db = await openDatabase(path, version: Constants().dbVersion, onCreate: (Database db, int version) async {
+      await db.execute(
+          "CREATE TABLE IF NOT EXISTS ${Constants().tableName} (id INTEGER PRIMARY KEY, name TEXT, mail TEXT, tel TEXT ,date TEXT)"
+      );
+    });
+
+    print(itemId);
+
+    await db.delete(Constants().tableName,
+        where:'date = ?',
+        whereArgs: [itemId]);
+  }
+
 
 
 
@@ -84,8 +113,30 @@ class _CalendarScreenState extends State<CalendarScreen> {
           )
             ..addAll(_eventsList);
 
+           getDate() {
+              //print(_selectedDay);
+            _events.forEach((key, value) {
+              //print('$key');
+
+              String Storing_key;
+              Storing_key = '$key';
+              DateTime datetime = DateTime.parse(Storing_key);
+              change_key = (DateFormat('MM-dd-yyyy')).format(datetime);
+
+              String change_selectedDay = (DateFormat('MM-dd-yyyy')).format(_selectedDay!);
+
+
+              if (change_key  == change_selectedDay) {
+                Delete_key = '$key';
+              }
+            });
+          }
+
+
+
           List _getEventForDay(DateTime day) {
             return _events[day] ?? [];
+
           }
 
 
@@ -127,14 +178,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   _focusedDay = focusedDay;
                 },
               ),
+
               ListView(
                 shrinkWrap: true,
                 children: _getEventForDay(_selectedDay!)
                     .map((event) =>
                     ListTile(
                       title: Text(event.toString()),
+                      trailing: IconButton(onPressed: () {
+                        getDate();
+
+                        _deleteData(Delete_key);
+
+                      }, icon: Icon(Icons.delete)),
                     ))
                     .toList(),
+
               )
             ],
           ),
@@ -162,7 +221,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
       /// データベースのパスを取得
 
       List<String> Datelist = [];
-      List list = [];
+      List<List> list = [];
+      Map<int, String> aa = {};
       String dbFilePath = await getDatabasesPath();
       String path = join(dbFilePath, Constants().dbName);
 
@@ -184,7 +244,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       /// データの取り出し
       for(Map item in result) {
         Datelist.add(item['date']);
-        list.add(item['name']);
+        list.add([item['name']]);
       }
 
 

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:chutoreal/constants.dart';
-import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:intl/intl.dart';
-import 'dart:async';
+
+import 'calender.dart';
 
 class FirstScreen extends StatefulWidget {
   @override
@@ -13,19 +13,12 @@ class FirstScreen extends StatefulWidget {
 
 class _FirstScreenState extends State<FirstScreen> {
   final nameController = TextEditingController();
-  final emailController = TextEditingController();
-  final phoneController = TextEditingController();
+  final weightController = TextEditingController();
   DateTime date = DateTime.now();
+  double text = 0;
 
-  final TextStyle style1 = TextStyle(
-      fontSize: 30.0,
-      color: Colors.black
-  );
-  final TextStyle style2 = TextStyle(
-      fontSize: 30.0,
-      color: Colors.black
-  );
-
+  final TextStyle style1 = TextStyle(fontSize: 30.0, color: Colors.black);
+  final TextStyle style2 = TextStyle(fontSize: 30.0, color: Colors.black);
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +26,7 @@ class _FirstScreenState extends State<FirstScreen> {
     String henka = this.date.toString();
     return Scaffold(
       appBar: AppBar(
-        title: Text('Input'),
+        title: Text('データ入力'),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -41,70 +34,94 @@ class _FirstScreenState extends State<FirstScreen> {
           children: <Widget>[
             Align(
               alignment: Alignment.centerLeft,
-              child: Text('体調:', style: style2,),
+              child: Text(
+                '今日したこと',
+                style: style2,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(20),
+              child: Container(color: Colors.white),
             ),
             TextField(
+              obscureText: true,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'メモ',
+              ),
               controller: nameController,
               style: style1,
             ),
             Align(
               alignment: Alignment.centerLeft,
-              child: Text('体重', style: style2,),
+              child: Text(
+                '体重',
+                style: style2,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(20),
+              child: Container(color: Colors.white),
             ),
             TextField(
-              controller: emailController,
+              onChanged: (String value) {
+                text = double.parse(value);
+              },
+              obscureText: true,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: '数値を入力',
+              ),
+              controller: weightController,
               style: style1,
             ),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text('体温', style: style2,),
+            Padding(
+              padding: EdgeInsets.all(20),
+              child: Container(color: Colors.white),
             ),
-            TextField(
-              controller: phoneController,
-              style: style1,
-            ),
-            Text(this.date.toString(), style: TextStyle(fontSize: 32)),
+            Text((DateFormat('yyyy年MM月dd日')).format(this.date),
+                style: TextStyle(fontSize: 32)),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                primary: Color(0xFFF5CC31),
+                onPrimary: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
               child: Text('選択'),
               onPressed: () => this.selectDate(context),
             ),
+            Padding(
+              padding: EdgeInsets.all(30),
+              child: Container(color: Colors.white),
+            ),
+            ElevatedButton(
+                child: const Text('保存する'),
+                style: ElevatedButton.styleFrom(
+                  primary: Color(0xFFF61D58),
+                  onPrimary: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onPressed: () async {
+                  if (text != 0) {
+                    _saveData();
+                    final newListText = await Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) {
+                        // 遷移先の画面としてリスト追加画面を指定
+                        return CalendarScreen();
+                      }),
+                    );
+                  }
+                }),
           ],
         ),
       ),
-    /*  bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            title: Text('追加'),
-            icon: Icon(Icons.home),
-          ),
-          BottomNavigationBarItem(
-              title: Text('一覧'),
-              icon: Icon(Icons.list)
-          ),
-        ],
-        onTap: (int index) {
-          if (index == 1) {
-            Navigator.pushNamed(context, '/list');
-          }
-        },
-      ),*/
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.save),
-        onPressed: () {
-          _saveData();
-          showDialog(
-              context: context,
-              builder: (BuildContext context) => AlertDialog(
-                title: Text("保存しました"),
-                content: Text('データベースに保存できました'),
-              )
-          );
-        },
-      ),
     );
-
   }
+
   selectDate(BuildContext context) async {
     // 1年前から1年後の範囲でカレンダーから日付を選択します。
     var selectedDate = await showDatePicker(
@@ -130,17 +147,18 @@ class _FirstScreenState extends State<FirstScreen> {
     String path = join(dbFilePath, Constants().dbName);
 
     /// 保存するデータの用意
-    String name = nameController.text;
-    String email = emailController.text;
-    String phone = phoneController.text;
+    String memoi = nameController.text;
+    String weight = weightController.text;
     DateTime? datet = this.date;
-    /// SQL文
-    String query = 'INSERT INTO ${Constants().tableName}(name, mail, tel, date) VALUES("$name", "$email", "$phone", "$datet")';
 
-    Database db = await openDatabase(path, version: Constants().dbVersion, onCreate: (Database db, int version) async {
+    /// SQL文
+    String query =
+        'INSERT INTO ${Constants().tableName}(memo, weight, date) VALUES("$memoi", "$weight", "$datet")';
+
+    Database db = await openDatabase(path, version: Constants().dbVersion,
+        onCreate: (Database db, int version) async {
       await db.execute(
-          "CREATE TABLE IF NOT EXISTS ${Constants().tableName} (id INTEGER PRIMARY KEY, name TEXT, mail TEXT, tel TEXT), date TEXT"
-      );
+          "CREATE TABLE IF NOT EXISTS ${Constants().tableName} (id INTEGER PRIMARY KEY, memo TEXT, weight TEXT), date TEXT");
     });
 
     /// SQL 実行
@@ -152,8 +170,7 @@ class _FirstScreenState extends State<FirstScreen> {
     /// ウィジェットの更新
     setState(() {
       nameController.text = "";
-      emailController.text = "";
-      phoneController.text = "";
+      weightController.text = "";
       this.date = DateTime.now();
     });
   }

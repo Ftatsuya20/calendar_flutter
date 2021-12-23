@@ -1,13 +1,11 @@
 import 'package:chutoreal/calender.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:chutoreal/addpage.dart';
 import 'package:chutoreal/SecondScreen.dart';
-
+import 'package:chutoreal/gacha.dart';
 
 void main() {
-  initializeDateFormatting().then((_) =>runApp(MyApp()));
+  initializeDateFormatting().then((_) => runApp(MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -16,14 +14,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter table calendar',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.pink,
       ),
-      /*initialRoute: '/',
+      initialRoute: '/',
       routes: {
-        '/': (context) => FirstScreen(),
+        '/': (context) => CalendarScreen(),
         '/list': (context) => SecondScreen(),
-      },*/
-      home: CalendarScreen(),
+        '/gacha': (context) => gachapage(),
+      },
+      // home: CalendarScreen(),
     );
   }
 }

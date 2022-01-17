@@ -44,7 +44,6 @@ class _FirstScreenState extends State<FirstScreen> {
               child: Container(color: Colors.white),
             ),
             TextField(
-              obscureText: true,
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'メモ',
@@ -67,7 +66,6 @@ class _FirstScreenState extends State<FirstScreen> {
               onChanged: (String value) {
                 text = double.parse(value);
               },
-              obscureText: true,
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: '数値を入力',

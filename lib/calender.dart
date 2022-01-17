@@ -198,7 +198,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       title: Text(event.toString(),
                           style: TextStyle(
                               fontSize: 15.0,
-                              decoration: TextDecoration.underline)),
+                              )),
                       trailing: IconButton(
                           onPressed: () async {
                             var result = await showDialog<int>(
